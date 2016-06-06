@@ -60,7 +60,7 @@ export function disconnect(client) {
 export function listTables(client) {
   return new Promise((resolve, reject) => {
     const sql = `
-      SELECT table_name
+      SELECT quote_ident(table_name) as table_name
       FROM information_schema.tables
       WHERE table_schema = $1
       AND table_type NOT LIKE '%VIEW%'
@@ -79,7 +79,7 @@ export function listTables(client) {
 export function listViews(client) {
   return new Promise((resolve, reject) => {
     const sql = `
-      SELECT table_name
+      SELECT quote_ident(table_name) as table_name
       FROM information_schema.views
       WHERE table_schema = $1
       ORDER BY table_name
@@ -97,7 +97,7 @@ export function listViews(client) {
 export function listRoutines(client) {
   return new Promise((resolve, reject) => {
     const sql = `
-      SELECT routine_name, routine_type
+      SELECT quote_ident(routine_name) as routine_name, routine_type
       FROM information_schema.routines
       WHERE routine_schema = $1
       ORDER BY routine_name
@@ -121,7 +121,7 @@ export function listTableColumns(client, table) {
       SELECT column_name, data_type
       FROM information_schema.columns
       WHERE table_schema = $1
-      AND table_name = $2
+      AND quote_ident(table_name) = $2
     `;
     const params = [
       'public',
@@ -143,7 +143,7 @@ export function listTableTriggers(client, table) {
       SELECT trigger_name
       FROM information_schema.triggers
       WHERE event_object_schema = $1
-      AND event_object_table = $2
+      AND quote_ident(event_object_table) = $2
     `;
     const params = [
       'public',
@@ -159,11 +159,11 @@ export function listTableTriggers(client, table) {
 export function getTableReferences(client, table) {
   return new Promise((resolve, reject) => {
     const sql = `
-      SELECT ctu.table_name AS referenced_table_name
+      SELECT quote_ident(ctu.table_name) AS referenced_table_name
       FROM information_schema.table_constraints AS tc
       JOIN information_schema.constraint_table_usage AS ctu
       ON ctu.constraint_name = tc.constraint_name
-      WHERE tc.constraint_type = 'FOREIGN KEY' AND tc.table_name = $1
+      WHERE tc.constraint_type = 'FOREIGN KEY' AND quote_ident(tc.table_name) = $1
     `;
     const params = [
       table,
